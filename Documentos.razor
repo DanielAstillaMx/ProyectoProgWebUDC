@@ -1,0 +1,68 @@
+﻿@page "/Documentos"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioDocumentos _repositorio;
+
+<h3>Documentos</h3>
+
+<a class="btn btn-success" href="documentos/nuevo">Agregar Documento</a>
+@if (_documentos == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visualmente-hidden">Cargando...</span>
+    </div>
+}
+else if (_documentos.Count == 0)
+{
+    <h3>No hay documentos registrados</h3>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Fecha de Inicio</th>
+                <th>Palabras Clave</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Documento documento in _documentos)
+            {
+                <tr>
+                    <td>@documento.Titulo</td>
+                    <td>@documento.FechaInicio.ToShortDateString()</td>
+                    <td>@documento.PalabrasClave</td>
+                    <td>
+                        <button class="btn btn-sm" title="Modificar" @onclick="() => Modificar(documento.ID)">Modificar</button>
+                        <button class="btn btn-sm" title="Eliminar" @onclick="() => Eliminar(documento)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Documento>? _documentos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _documentos = await _repositorio.GetAll();
+    }
+
+    private async void Eliminar(Documento documento)
+    {
+        await _repositorio.Delete(documento.ID);
+        _documentos!.Remove(documento);
+        StateHasChanged();
+    }
+
+    private void Modificar(int ID)
+    {
+        _navigator.NavigateTo($"/documentos/editar/{ID}");
+    }
+}
+
+

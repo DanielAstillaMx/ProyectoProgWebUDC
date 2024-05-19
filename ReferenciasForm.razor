@@ -1,0 +1,93 @@
+﻿@page "/referencias/nuevo"
+@page "/referencias/editar/{ID:int}"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioReferencias _repositorio;
+
+<h2>@_mensaje Referencia</h2>
+
+<EditForm Model="_referencia" FormName="frmReferencia" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="row mb-3">
+        <label for="txtTitulo" class="col-2 col-form-label">Título</label>
+        <div class="col-10">
+            <InputText ID="txtTitulo" class="form-control" @bind-Value="_referencia.Titulo" />
+            <ValidationMessage For="()=>_referencia.Titulo" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtAutores" class="col-2 col-form-label">Autores</label>
+        <div class="col-10">
+            <InputText ID="txtAutores" class="form-control" @bind-Value="_referencia.Autores" />
+            <ValidationMessage For="()=>_referencia.Autores" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtAnioPublicacion" class="col-2 col-form-label">Año de Publicación</label>
+        <div class="col-10">
+            <InputNumber ID="txtAnioPublicacion" class="form-control" @bind-Value="_referencia.AnioPublicacion" />
+            <ValidationMessage For="()=>_referencia.AnioPublicacion" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtPaginaReferencia" class="col-2 col-form-label">Página de Referencia</label>
+        <div class="col-10">
+            <InputText ID="txtPaginaReferencia" class="form-control" @bind-Value="_referencia.PaginaReferencia" />
+            <ValidationMessage For="()=>_referencia.PaginaReferencia" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtPalabrasClave" class="col-2 col-form-label">Palabras Clave</label>
+        <div class="col-10">
+            <InputText id="txtPalabrasClave" class="form-control" @bind-Value="_referencia.PalabrasClave" />
+            <ValidationMessage For="()=>_referencia.PalabrasClave" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+    private string _mensaje = "";
+    private Referencia? _referencia = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ID > 0)
+        {
+            _referencia = await _repositorio.Get(ID);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nueva";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (ID > 0)
+        {
+            await _repositorio.Update(ID, _referencia!);
+        }
+        else
+        {
+            await _repositorio.Add(_referencia!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/referencias");
+    }
+}
+

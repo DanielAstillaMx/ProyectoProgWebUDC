@@ -1,0 +1,101 @@
+﻿@page "/documentos/nuevo"
+@page "/documentos/editar/{ID:int}"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioDocumentos _repositorio;
+@inject IRepositorioUsuarios _repositorioUsuarios;
+
+<h2>@_mensaje Documento</h2>
+
+<EditForm Model="_documento" FormName="frmDocumento" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="row mb-3">
+        <label for="txtTitulo" class="col-2 col-form-label">Título</label>
+        <div class="col-10">
+            <InputText ID="txtTitulo" class="form-control" @bind-Value="_documento.Titulo" />
+            <ValidationMessage For="()=>_documento.Titulo" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtUsuarioID" class="col-2 col-form-label">Usuario</label>
+        <div class="col-10">
+            <InputSelect id="txtUsuarioID" class="form-select" @bind-Value="_documento.UsuarioID">
+                <option value="0">Seleccione usuario ...</option>
+                @foreach (Usuario usuario in _usuarios)
+                {
+                    <option value="@usuario.ID">@usuario.Nombre</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="()=>_documento.UsuarioID" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtFechaInicio" class="col-2 col-form-label">Fecha de Inicio</label>
+        <div class="col-10">
+            <InputDate id="txtFechaInicio" class="form-control" @bind-Value="_documento.FechaInicio" />
+            <ValidationMessage For="()=>_documento.FechaInicio" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtPalabrasClave" class="col-2 col-form-label">Palabras Clave</label>
+        <div class="col-10">
+            <InputText id="txtPalabrasClave" class="form-control" @bind-Value="_documento.PalabrasClave" />
+            <ValidationMessage For="()=>_documento.PalabrasClave" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtResumen" class="col-2 col-form-label">Resumen</label>
+        <div class="col-10">
+            <InputTextArea id="txtResumen" class="form-control" @bind-Value="_documento.Resumen" />
+            <ValidationMessage For="()=>_documento.Resumen" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+    private string _mensaje = "";
+    private Documento? _documento = new();
+    private List<Usuario> _usuarios = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _usuarios = await _repositorioUsuarios.GetAll();
+        if (ID > 0)
+        {
+            _documento = await _repositorio.Get(ID);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (ID > 0)
+        {
+            await _repositorio.Update(ID, _documento!);
+        }
+        else
+        {
+            await _repositorio.Add(_documento!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/documentos");
+    }
+}

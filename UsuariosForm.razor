@@ -1,0 +1,91 @@
+﻿@page "/usuarios/nuevo"
+@page "/usuarios/editar/{ID:int}"
+@rendermode InteractiveServer 
+@inject NavigationManager _navigator;
+@inject IRepositorioUsuarios _repositorio;
+<h2>@_mensaje Usuario</h2>
+
+<EditForm Model="_usuario" FormName="frmUsuario" OnValidSubmit="Guardar">
+
+
+    <DataAnnotationsValidator />    
+    <div class="row mb-3">
+        <label for="txtNombre" class="col-2 col-form-label">Nombre</label>
+        <div class="col-10">
+            <InputText ID="txtNombre" class="form-control" @bind-Value="_usuario.Nombre" />
+            <ValidationMessage For="()=>_usuario.Nombre"/> 
+        </div>
+    </div>
+    <div class="row mb-3" >
+        <label for="txtCorreo" class="co1-2 col-form-label">Correo</label>
+        <div class="col-10">
+            <InputText id="txtCorreo" class="form-control" @bind-Value="_usuario.Correo" />
+            <ValidationMessage For="()=>_usuario.Correo"/>
+        </div>
+    </div>
+    @*
+    <div class="row mb-3">
+        <label for="txtTelefono" class="col-2 col-form-label">Teléfono</label>
+        <div class="col-10">
+            <InputSelect class="form-select" @bind-Value="_persona.DocumentoId">
+                <option value="0" enabled ="enabled">Seleccione documento ...</option>
+                @foreach (Documento documento in _documentos)
+                {
+                    <option value="@documento.Id">@documento.Nombre</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="()=>_usuario.Telefono" />
+        </div>
+    </div>
+    *@
+    <div class="row mb-3">
+        <label for="txtDocumento" class="col-2 col-form-label">Documento</label>
+        <div class="col-10">
+            <InputText id="txtDocumento" class="form-control" @bind-Value="_usuario.Telefono" />
+            <ValidationMessage For="()=>_usuario.Telefono" />
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+    private string _mensaje = "";
+    private Usuario? _usuario = new();
+    private List<Documento> _documentos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _documentos = await _repositorio.GetDocumentos(); 
+        if (ID > 0)
+        {
+            _usuario = await _repositorio.Get(ID);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (ID > 0)
+        {
+            await _repositorio.Update(ID, _usuario!);
+        }
+        else
+        {
+            await _repositorio.Add(_usuario!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/usuarios");
+    }
+}

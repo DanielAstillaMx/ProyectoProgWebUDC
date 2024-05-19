@@ -1,0 +1,72 @@
+﻿@page "/Referencias"
+@rendermode InteractiveServer
+@inject NavigationManager _navigator;
+@inject IRepositorioReferencias _repositorio;
+
+<h3>Referencias</h3>
+
+<a class="btn btn-success" href="referencias/nuevo">Agregar Referencia</a>
+@if (_referencias == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visualmente-hidden">Cargando...</span>
+    </div>
+}
+else if (_referencias.Count == 0)
+{
+    <h3>No hay referencias registradas</h3>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Autores</th>
+                <th>Año de Publicación</th>
+                <th>Página de Referencia</th>
+                <th>Palabras Clave</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Referencia referencia in _referencias)
+            {
+                <tr>
+                    <td>@referencia.Titulo</td>
+                    <td>@referencia.Autores</td>
+                    <td>@referencia.AnioPublicacion</td>
+                    <td>@referencia.PaginaReferencia</td>
+                    <td>@referencia.PalabrasClave</td>
+                    <td>
+                        <button class="btn btn-sm" title="Modificar" @onclick="() => Modificar(referencia.ID)">Modificar</button>
+                        <button class="btn btn-sm" title="Eliminar" @onclick="() => Eliminar(referencia)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Referencia>? _referencias;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _referencias = await _repositorio.GetAll();
+    }
+
+    private async void Eliminar(Referencia referencia)
+    {
+        await _repositorio.Delete(referencia.ID);
+        _referencias!.Remove(referencia);
+        StateHasChanged();
+    }
+
+    private void Modificar(int ID)
+    {
+        _navigator.NavigateTo($"/referencias/editar/{ID}");
+    }
+}
+
+
